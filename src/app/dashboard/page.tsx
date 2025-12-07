@@ -105,7 +105,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-<<<<<<< HEAD
             <div className="flex flex-col w-full gap-4 mb-6">
               <Input
                 value={positionCode}
