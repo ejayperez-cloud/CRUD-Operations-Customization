@@ -1,79 +1,106 @@
 'use client'
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { saveToken } from '@/lib/auth';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, FormEvent } from "react";
+import { saveToken } from '@/lib/auth'; // If you need to save token — otherwise you can remove this
 import { API_BASE } from '@/lib/config';
-import { FormEvent } from "react";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);  // ← Add loading state
 
   async function handleRegister(e: FormEvent) {
     e.preventDefault();
     setError('');
+    setLoading(true); // ← set loading when starting request
 
-    const res = await fetch(`${API_BASE}/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.message || 'Register Failed');
-      return;
+      if (!res.ok) {
+        setError(data.message || 'Register Failed');
+        return;
+      }
+
+      // Optionally save token if your API returns one
+      if (data.accessToken) {
+        saveToken(data.accessToken);
+      }
+
+      router.push('/login');
+    } catch (err) {
+      console.error(err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false); // ← stop loading after request completes (success or error)
     }
-
-    saveToken(data.accessToken);
-    router.push('/login');
   }
 
   return (
-    <div className="flex justify-center items-center h-screen p-6 bg-black">
-      <Card className="w-full max-w-sm p-4 rounded-xl shadow-xl bg-zinc-900 border border-red-600">
-        <CardContent>
-          <h2 className="text-3xl font-bold mb-4 text-center text-red-500">
-            Register
-          </h2>
+    <div className="flex justify-center items-center h-screen w-full 
+      bg-gradient-to-br from-red-700 to-black p-4">
 
-          <form onSubmit={handleRegister} className="space-y-4">
-            {error && (
-              <p className="text-red-400 text-center font-medium">
-                {error}
-              </p>
-            )}
+      <div className="bg-white/10 backdrop-blur-md border border-red-600 
+        rounded-3xl p-10 w-full max-w-md shadow-2xl">
 
-            <Input
-              className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+        <h1 className="text-white text-4xl text-center font-extrabold mb-8">
+          Register
+        </h1>
 
-            <Input
-              type="password"
-              className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <form onSubmit={handleRegister} className="space-y-6">
+          {error && (
+            <p className="text-red-400 text-center font-semibold">{error}</p>
+          )}
 
-            <Button
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold hover:underline cursor-pointer"
-              type="submit"
-            >
-              Register
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full py-3 px-4 bg-red-900 text-white placeholder-red-200 
+            rounded-2xl outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full py-3 px-4 bg-red-900 text-white placeholder-red-200 
+            rounded-2xl outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-black text-white rounded-2xl text-lg 
+            font-semibold hover:bg-zinc-900 transition disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={loading}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        <p className="text-center text-gray-300 mt-5 text-sm">
+          Already have an account?{" "}
+          <span
+            onClick={() => router.push('/login')}
+            className="text-red-400 font-semibold hover:underline cursor-pointer"
+          >
+            Login
+          </span>
+        </p>
+
+      </div>
     </div>
   );
 }

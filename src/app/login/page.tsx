@@ -1,91 +1,106 @@
 'use client'
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { saveToken } from '@/lib/auth';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { API_BASE } from '@/lib/config';
-import { FormEvent } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Loading state
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
     setError('');
+    setLoading(true); // Start loading
 
-    const res = await fetch(`${API_BASE}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.message || 'Login Failed');
-      return;
+      if (!res.ok) {
+        setError(data.message || 'Invalid username or password');
+        return;
+      }
+
+      // Save token and username
+      saveToken(data.accessToken);
+      localStorage.setItem('username', username);
+
+      // Navigate to dashboard
+      router.push('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false); // Stop loading
     }
-
-    saveToken(data.accessToken);
-    router.push('/dashboard');
   }
 
   return (
-    <div className="flex justify-center items-center h-screen p-6 bg-black">
-      <Card className="w-full max-w-sm p-4 rounded-xl shadow-xl bg-zinc-900 border border-red-600">
-        <CardContent>
-          <h2 className="text-3xl font-bold mb-4 text-center text-red-500">
-            Login
-          </h2>
+    <div className="flex justify-center items-center h-screen w-full 
+      bg-gradient-to-br from-red-700 to-black p-4">
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <p className="text-red-400 text-center font-medium">
-                {error}
-              </p>
-            )}
+      <div className="bg-white/10 backdrop-blur-md border border-red-600 
+        rounded-3xl p-10 w-full max-w-md shadow-2xl">
 
-            <Input
-              className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+        <h1 className="text-white text-4xl text-center font-extrabold mb-8">
+          Login
+        </h1>
 
-            <Input
-              type="password"
-              className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <form onSubmit={handleLogin} className="space-y-6">
+          {error && (
+            <p className="text-red-400 text-center font-semibold">{error}</p>
+          )}
 
-            <Button
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold hover:underline cursor-pointer"
-              type="submit"
-            >
-              Login
-            </Button>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full py-3 px-4 bg-red-900 text-white placeholder-red-200 
+            rounded-2xl outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
 
-            {/* Register link */}
-            <p className="text-center text-sm text-gray-300 mt-2">
-              Don’t have an account yet?{" "}
-              <span
-                onClick={() => router.push('/register')}
-                className="text-red-500 font-semibold hover:underline cursor-pointer"
-              >
-                Register
-              </span>
-            </p>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full py-3 px-4 bg-red-900 text-white placeholder-red-200 
+            rounded-2xl outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
 
-          </form>
-        </CardContent>
-      </Card>
+          <button
+            type="submit"
+            className="w-full py-3 bg-black text-white rounded-2xl text-lg 
+            font-semibold hover:bg-zinc-900 transition disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={loading} // Disable button while logging in
+          >
+            {loading ? "Logging in..." : "Login"} {/* Dynamic text */}
+          </button>
+        </form>
+
+        <p className="text-center text-gray-300 mt-5 text-sm">
+          Don’t have an account yet?{" "}
+          <span
+            onClick={() => router.push('/register')}
+            className="text-red-400 font-semibold hover:underline cursor-pointer"
+          >
+            Register
+          </span>
+        </p>
+
+      </div>
     </div>
   );
 }

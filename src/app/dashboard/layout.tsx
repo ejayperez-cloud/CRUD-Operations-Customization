@@ -1,34 +1,52 @@
-'use client'
+'use client';
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {getToken, logOutUser} from '@/lib/auth';
 import { Button } from "@/components/ui/button";
+import { getToken, logOutUser } from "@/lib/auth";
 
-export default function DashboardLayout({children}:{
-    children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [checked, setChecked] = useState(false);
 
-    const router = useRouter();
+  useEffect(() => {
     const token = getToken();
-
-    if(!token){
-        router.push('/login');
-        return null;
+    if (!token) {
+      router.replace("/login");
+      return;
     }
 
-    function handleLogout(){
-        logOutUser();
-         router.push('/login');
-    }
+    const stored = localStorage.getItem("username") ?? "";
+    setUsername(stored);
+    setChecked(true);
+  }, [router]);
 
-    return(
-        <div className="p-6">
-        <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold ">Hello!, Welcome to my NextJs and NestJs Authentication</h1>
-        <Button variant="destructive" onClick={handleLogout} className="hover: cursor-pointer">Logout</Button>
-        </header>
+  function logout() {
+    logOutUser();
+    localStorage.removeItem("username");
+    router.replace("/login");
+  }
 
-        {children}
-        </div>
-    );
+  if (!checked) return null;
 
+  return (
+    <div className="min-h-screen bg-white">
+      {/* TOP HEADER */}
+      <header className="flex justify-between items-center px-8 py-4 bg-white shadow">
+        <h1 className="text-2xl font-bold text-red-600">
+          Hello {username}!, Welcome to my NextJs and NestJs Authentication
+        </h1>
+
+        <Button
+          onClick={logout}
+          className="bg-black text-white rounded-full px-6 py-2 hover:bg-zinc-900"
+        >
+          Logout
+        </Button>
+      </header>
+
+      {children}
+    </div>
+  );
 }
