@@ -9,12 +9,29 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+<<<<<<< HEAD
   const [loading, setLoading] = useState(false); // Loading state
+=======
+  const [fieldErrors, setFieldErrors] = useState({ username: '', password: '' });
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
     setError('');
+<<<<<<< HEAD
     setLoading(true); // Start loading
+=======
+    setFieldErrors({ username: '', password: '' });
+
+    const newErrors: any = {};
+    if (!username.trim()) newErrors.username = "Please fill in this field";
+    if (!password.trim()) newErrors.password = "Please fill in this field";
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
+      return;
+    }
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
 
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
@@ -51,6 +68,7 @@ export default function LoginPage() {
       <div className="bg-white/10 backdrop-blur-md border border-red-600 
         rounded-3xl p-10 w-full max-w-md shadow-2xl">
 
+<<<<<<< HEAD
         <h1 className="text-white text-4xl text-center font-extrabold mb-8">
           Login
         </h1>
@@ -59,6 +77,38 @@ export default function LoginPage() {
           {error && (
             <p className="text-red-400 text-center font-semibold">{error}</p>
           )}
+=======
+            {/* USERNAME FIELD */}
+            <div>
+              <Input
+                className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              {fieldErrors.username && (
+                <p className="text-red-400 text-sm mt-1">
+                  {fieldErrors.username}
+                </p>
+              )}
+            </div>
+
+            {/* PASSWORD FIELD */}
+            <div>
+              <Input
+                type="password"
+                className="bg-zinc-800 text-white border-red-600 focus:border-red-500"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {fieldErrors.password && (
+                <p className="text-red-400 text-sm mt-1">
+                  {fieldErrors.password}
+                </p>
+              )}
+            </div>
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
 
           <input
             type="text"
@@ -70,6 +120,7 @@ export default function LoginPage() {
             required
           />
 
+<<<<<<< HEAD
           <input
             type="password"
             placeholder="Password"
@@ -101,6 +152,20 @@ export default function LoginPage() {
         </p>
 
       </div>
+=======
+            <p className="text-center text-sm text-gray-300 mt-2">
+              Don’t have an account yet?{" "}
+              <span
+                onClick={() => router.push('/register')}
+                className="text-red-500 font-semibold hover:underline cursor-pointer"
+              >
+                Register
+              </span>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
     </div>
   );
 }

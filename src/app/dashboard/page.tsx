@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { API_BASE } from "@/lib/config";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth";
+<<<<<<< HEAD
+=======
+import {jwtDecode} from "jwt-decode";
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
 
 interface Position {
   position_id?: number;
@@ -101,6 +105,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+<<<<<<< HEAD
             <div className="flex flex-col w-full gap-4 mb-6">
               <Input
                 value={positionCode}
@@ -162,6 +167,14 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
+=======
+        {token && (
+          <div className="mt-4">
+            <p className="text-red-400 font-semibold">Your Bearer Token</p>
+            <pre className="p-3 bg-zinc-800 text-gray-200 text-xs mt-2 rounded-lg border border-red-700 overflow-x-auto whitespace-nowrap max-w-full">
+              {token}
+            </pre>
+>>>>>>> 41992e17d70c49cb2c189982c29045999c26f63f
           </div>
 
         </div>
